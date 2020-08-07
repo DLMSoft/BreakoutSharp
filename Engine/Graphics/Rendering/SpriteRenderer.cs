@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using BreakoutSharp.Engine.Directing;
+using BreakoutSharp.Engine.Graphics.UI;
 using BreakoutSharp.Engine.Resourcing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
@@ -16,6 +17,8 @@ namespace BreakoutSharp.Engine.Graphics.Rendering {
 
         static SpriteRenderer() {
             DefaultShader = ResourceManager.LoadShader("sprite.glsl", "default_sprite", ResourcePool.Global);
+            DefaultShader.Use();
+            DefaultShader.SetUniform("u_Resolution", new Vector2(Game.Instance.ScreenWidth, Game.Instance.ScreenHeight));
         }
 
         public SpriteRenderer(GameObject owner) : base(owner) {
@@ -37,15 +40,26 @@ namespace BreakoutSharp.Engine.Graphics.Rendering {
             GL.Disable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Blend);
 
-            Sprite.Texture.Bind();
-            DefaultShader.Use();
+            if (Sprite.Blend == SpriteBlend.AlphaBlend) {
+                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                GL.BlendEquation(BlendEquationMode.FuncAdd);
+            }
 
-            DefaultShader.SetUniform("u_Resolution", new Vector2(Game.Instance.ScreenWidth, Game.Instance.ScreenHeight));
+            DefaultShader.Use();
+            
             DefaultShader.SetUniform("u_Model", matrix);
 
             DefaultShader.SetUniform("u_Color", Sprite.Color);
             DefaultShader.SetUniform("u_Opacity", Sprite.Opacity);
+
+            Sprite.Texture.Bind();
             
+            Sprite.BindElementBuffer();
+
+            GL.DrawElements(PrimitiveType.Triangles, Sprite.VertexCount, DrawElementsType.UnsignedInt, 0);
+
+            GL.BindVertexArray(0);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
         }
     }
 }

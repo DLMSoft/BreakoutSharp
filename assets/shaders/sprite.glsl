@@ -1,4 +1,3 @@
-#version 330 core
 /**
  * sprite.glsl
  * Standard shader for 2D sprite.
@@ -13,13 +12,15 @@ uniform vec2 u_Resolution;
 uniform mat4 u_Model;
 
 void main() {
-    vec2 transformated = (vec4(a_Pos, 0.0, 0.0) * u_Model).xy;
+    vec2 transformated = (u_Model * vec4(a_Pos, 0.0, 1.0)).xy;
 
-    vec4 finalPos = transformated / (u_Resolution / 2.0) - 1.0;
+    vec2 halfRes = u_Resolution / 2;
+
+    vec2 finalPos = transformated / halfRes - 1.0;
     
     v_TexCoord = a_TexCoord;
 
-    gl_Position = vec4(finalPos.x, -finalPos.y, 0, 0);
+    gl_Position = vec4(finalPos.x, -finalPos.y, 0, 1);
 }
 #endif
 
@@ -39,7 +40,7 @@ void main() {
         return;
     }
 
-    vec4 result = texture(u_Texture, v_TexCoord) * vec4(u_Color.xyz, u_Color.w * u_Opacity);
+    vec4 result = texture(u_Texture, v_TexCoord) * u_Color * u_Opacity;
 
     o_FragColor = result;
 }

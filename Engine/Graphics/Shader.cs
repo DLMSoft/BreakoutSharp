@@ -1,6 +1,7 @@
 #region Using directives
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using BreakoutSharp.Engine.Resourcing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
@@ -21,19 +22,39 @@ namespace BreakoutSharp.Engine.Graphics {
 
             programId = GL.CreateProgram();
 
+            int success = 0;
+
             var vertId = GL.CreateShader(ShaderType.VertexShader);
-            var vertContent = "#define COMPILE_VERT\r\n" + input;
+            var vertContent = "#version 330 core\r\n#define COMPILE_VERT\r\n" + input;
             GL.ShaderSource(vertId, vertContent);
             GL.CompileShader(vertId);
+            GL.GetShader(vertId, ShaderParameter.CompileStatus, out success);
+            if (success == 0) {
+                var error = GL.GetShaderInfoLog(vertId);
+                Debug.WriteLine("[VERTEX SHADER] Compile Error : \r\n" + error);
+                throw new Exception("Error while compiling vertex shader.");
+            }
             GL.AttachShader(programId, vertId);
 
-            var fragId = GL.CreateShader(ShaderType.VertexShader);
-            var fragContent = "#define COMPILE_FRAG\r\n" + input;
+            var fragId = GL.CreateShader(ShaderType.FragmentShader);
+            var fragContent = "#version 330 core\r\n#define COMPILE_FRAG\r\n" + input;
             GL.ShaderSource(fragId, fragContent);
             GL.CompileShader(fragId);
+            GL.GetShader(vertId, ShaderParameter.CompileStatus, out success);
+            if (success == 0) {
+                var error = GL.GetShaderInfoLog(fragId);
+                Debug.WriteLine("[FRAGMENT SHADER] Compile Error : \r\n" + error);
+                throw new Exception("Error while compiling fragment shader.");
+            }
             GL.AttachShader(programId, fragId);
 
             GL.LinkProgram(programId);
+            GL.GetProgram(programId, GetProgramParameterName.LinkStatus, out success);
+            if (success == 0) {
+                var error = GL.GetProgramInfoLog(programId);
+                Debug.WriteLine("[PROGRAM] Link Error : \r\n" + error);
+                throw new Exception("Error while linking shader.");
+            }
 
             GL.DeleteShader(vertId);
             GL.DeleteShader(fragId);

@@ -17,16 +17,12 @@ namespace BreakoutSharp.Engine.Directing {
         }
 
         public Matrix4 UpdateTransform() {
-            var result = Matrix4.Identity;
-
             var trans = Matrix4.CreateTranslation(Position.X, Position.Y, 0.0f);
             var scale = Matrix4.CreateScale(Scale.X, Scale.Y, 1.0f);
             var rot = Matrix4.CreateRotationZ(Rotation);
             var offset = Matrix4.CreateTranslation(-Offset.X, -Offset.Y, 0.0f);
 
-            result = trans * scale * rot * offset;
-
-            return result;
+            return offset * rot * scale * trans;
         }
     }
 }

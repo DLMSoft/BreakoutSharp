@@ -49,6 +49,8 @@ namespace BreakoutSharp.Engine.Graphics.UI {
         public float Opacity { get; set; }
 
         public SpriteBlend Blend { get; set; }
+
+        public int VertexCount { get; private set; }
         
         int width;
         int height;
@@ -61,6 +63,8 @@ namespace BreakoutSharp.Engine.Graphics.UI {
         public Sprite(Texture2D texture) {
             Texture = texture;
             Padding = new Padding();
+            Opacity = 1.0f;
+            Color = new Vector4(1, 1, 1, 1);
             Blend = SpriteBlend.AlphaBlend;
             Width = Texture.Width;
             Height = Texture.Height;
@@ -75,7 +79,7 @@ namespace BreakoutSharp.Engine.Graphics.UI {
         public void BuildVertices() {
             List<SpriteVertex> vertexList = new List<SpriteVertex>();
             List<int> indexList = new List<int>();
-
+        
             float leftRatio = Padding.Left / (float)width;
             float topRatio = Padding.Top / (float)height;
             float rightRatio = Padding.Right / (float)width;
@@ -109,6 +113,7 @@ namespace BreakoutSharp.Engine.Graphics.UI {
             // Inner indices
             indexList.AddRange(new [] { 0, 1, 2, 1, 3, 2 });
             
+            #region Paddings
             #region Left-Side
             int l1 = 0;
             int l2 = 0;
@@ -236,7 +241,10 @@ namespace BreakoutSharp.Engine.Graphics.UI {
                 indexList.AddRange(new [] { l2, 2, index, 2, b1, index });
             }
             #endregion
-        
+            #endregion
+            
+            VertexCount = indexList.Count;
+
             var vertices = vertexList.ToArray();
             var indices = indexList.ToArray();
 
@@ -248,16 +256,22 @@ namespace BreakoutSharp.Engine.Graphics.UI {
 
             vbo = buffers[0];
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * Marshal.SizeOf<SpriteVertex>(), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * 4 * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
             ebo = buffers[1];
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * 4, indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
 
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, Marshal.SizeOf<SpriteVertex>(), new IntPtr(0));
+            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), new IntPtr(0));
             GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, Marshal.SizeOf<SpriteVertex>(), new IntPtr(Marshal.SizeOf<Vector2>()));
-            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), new IntPtr(2 * sizeof(float)));
+            GL.EnableVertexAttribArray(1);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            GL.BindVertexArray(0);
+
+            rebuildVertices = false;
         }
 
         public void Dispose() {
@@ -279,7 +293,7 @@ namespace BreakoutSharp.Engine.Graphics.UI {
             }
         }
         
-        public void BindVertexArray() {
+        public void BindElementBuffer() {
             if (rebuildVertices) {
                 if (vao != -1) {
                     GL.DeleteVertexArray(vao);
@@ -300,6 +314,7 @@ namespace BreakoutSharp.Engine.Graphics.UI {
             }
 
             GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
         }
     }
 }
