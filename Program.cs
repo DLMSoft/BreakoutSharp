@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BreakoutSharp.Engine.Directing;
 
 namespace BreakoutSharp {
     static class Program {
@@ -15,7 +16,11 @@ namespace BreakoutSharp {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            
+            using (var game = new BreakoutGame()) {
+                SceneManager.SetInitScene(new StageScene());
+
+                game.Run();
+            }
         }
     }
 }

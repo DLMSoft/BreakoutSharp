@@ -5,7 +5,7 @@ using BreakoutSharp.Engine.Graphics;
 #endregion
 
 namespace BreakoutSharp.Engine.Directing {
-    sealed class GameObject : IDisposable {
+    sealed class GameObject : IDisposable, ICloneable {
         public static int Count { get; private set; } = 0;
         public int Id { get; }
         public string Name { get; set; }
@@ -16,7 +16,7 @@ namespace BreakoutSharp.Engine.Directing {
         public bool Disposed { get; private set; }
 
         public GameObject() {
-            Id = Count;
+            Id = Count++;
 
             Name = "object#" + Id;
 
@@ -29,6 +29,26 @@ namespace BreakoutSharp.Engine.Directing {
             features = new List<Feature>();
         }
 
+        private GameObject(GameObject parent) {
+            Id = Count++;
+
+            Name = "object#" + Id;
+
+            Transform = new Transform2D();
+            Transform.Offset = parent.Transform.Offset;
+            Transform.Position = parent.Transform.Position;
+            Transform.Scale = parent.Transform.Scale;
+            Transform.Rotation = parent.Transform.Rotation;
+
+            Renderer = parent.Renderer.Clone(this);
+
+            Activated = parent.Activated;
+            Initialized = false;
+            Disposed = false;
+            
+            features.AddRange(parent.features);
+        }
+
         public void Update(double elapsed) {
             if (Disposed)
                 return;
@@ -39,6 +59,9 @@ namespace BreakoutSharp.Engine.Directing {
                     f.OnLoad();
                 }
             }
+
+            if (!Activated)
+                return;
 
             foreach (var f in features) {
                 f.OnUpdate(elapsed);
@@ -83,6 +106,10 @@ namespace BreakoutSharp.Engine.Directing {
             }
 
             return null;
+        }
+
+        public object Clone() {
+            return new GameObject(this);
         }
 
         List<Feature> features;

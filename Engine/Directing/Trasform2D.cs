@@ -4,10 +4,10 @@ using OpenTK;
 
 namespace BreakoutSharp.Engine.Directing {
     sealed class Transform2D {
-        public Vector2 Position { get; set; }
-        public Vector2 Offset { get; set; }
-        public Vector2 Scale { get; set; }
-        public float Rotation { get; set; }
+        public Vector2 Position;
+        public Vector2 Offset;
+        public Vector2 Scale;
+        public float Rotation;
 
         public Transform2D() {
             Position = new Vector2(0.0f, 0.0f);
