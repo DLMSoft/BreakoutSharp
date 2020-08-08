@@ -7,7 +7,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace BreakoutSharp.Engine {
     sealed class EngineWindow : GameWindow {
-        public EngineWindow(string title, int width, int height) : base () {
+        public EngineWindow(string title, int width, int height) : base (width, height) {
             Title = title;
             WindowBorder = WindowBorder.Fixed;
             ClientSize = new Size(width, height);
@@ -21,6 +21,7 @@ namespace BreakoutSharp.Engine {
         protected override void OnUpdateFrame(FrameEventArgs e) {
             var elapsed = e.Time;
 
+            Input.Update();
             SceneManager.Update(elapsed);
         }
 

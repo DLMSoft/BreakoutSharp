@@ -32,6 +32,11 @@ namespace BreakoutSharp.Engine.Directing {
 
         public void Terminate() {
             OnTerminate();
+
+            foreach (var obj in gameObjects.Values) {
+                obj.Dispose();
+            }
+
             gameObjects.Clear();
             ResourceManager.Cleanup(ResourcePool.Scene);
         }

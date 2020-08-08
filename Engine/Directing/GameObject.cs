@@ -46,6 +46,7 @@ namespace BreakoutSharp.Engine.Directing {
             Initialized = false;
             Disposed = false;
             
+            features = new List<Feature>();
             features.AddRange(parent.features);
         }
 

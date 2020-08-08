@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using BreakoutSharp.Engine.Directing;
 using BreakoutSharp.Engine.Graphics;
 using BreakoutSharp.Engine.Resourcing;
 #endregion
@@ -14,13 +15,15 @@ namespace BreakoutSharp.Engine {
         public abstract string Title { get; }
         public abstract int ScreenWidth { get; }
         public abstract int ScreenHeight { get; }
+        public abstract Scene DefaultScene { get; }
 
         public Game() {
             Instance = this;
             renderers = new List<Renderer>();
         }
 
-        public void Run() {
+        public void Run() { 
+            SceneManager.SetInitScene(DefaultScene);
             using (window = new EngineWindow(Title, ScreenWidth, ScreenHeight)) {
                 window.Run();
             }
