@@ -14,17 +14,24 @@ namespace BreakoutSharp {
         const int BRICK_WIDTH = 960 / 15;
         const int BRICK_HEIGHT = 640 / 16;
         const int MAX_LEVELS =  5;
+        const float BALL_RADIUS = 12f;
+        const float PADDLE_HEIGHT = 13f;
+
+        const float PADDLE_SPEED = 960.0f;
+        const float BALL_SPEED = 800.0f;
 
         string levelContent;
 
         GameObject background;
         GameObject paddle;
+        GameObject ball;
         GameObject[] bricks;
 
         int remeaningBricks = 0;
 
         int levelNumber = 0;
 
+        #region Constructor
         public StageScene(int stage) : base() {
             levelNumber = stage;
 
@@ -35,7 +42,9 @@ namespace BreakoutSharp {
 
             levelContent = File.ReadAllText(fileName);
         }
+        #endregion
 
+        #region MakeBricks
         void MakeBricks() {
             var brickTexture = ResourceManager.LoadTexture2D("block.png", "brick");
             var brickSolidTexture = ResourceManager.LoadTexture2D("block_solid.png", "brick_solid");
@@ -83,10 +92,13 @@ namespace BreakoutSharp {
                 bricks[i] = b;
             }
         }
+        #endregion
 
+        #region OnPrepare
         public override void OnPrepare() {
             MakeBricks();
 
+            #region Background
             var bgSprite = new Sprite(ResourceManager.LoadTexture2D("background.jpg", "background"));
             bgSprite.Width = 960;
             bgSprite.Height = 640;
@@ -96,7 +108,9 @@ namespace BreakoutSharp {
                 Sprite = bgSprite
             };
             AddObject(background);
+            #endregion
 
+            #region Paddle
             var paddleSprite = new Sprite(ResourceManager.LoadTexture2D("paddle.png", "paddle"));
             paddleSprite.Padding = new Padding(64, 0);
             paddle = new GameObject();
@@ -109,7 +123,9 @@ namespace BreakoutSharp {
             paddle.Transform.Scale = new Vector2(0.2f, 0.2f);
             paddle.Transform.Offset = new Vector2(256, 64);
             AddObject(paddle);
+            #endregion
 
+            #region Bricks
             var lines = levelContent.Split('\n');
             
             if (lines.Length > 12) {
@@ -152,11 +168,30 @@ namespace BreakoutSharp {
 
                 cy ++;
             }
+            #endregion
+        
+            #region Ball
+            ball = new GameObject();
+            ball.Name = "ball";
+            ball.Renderer = new SpriteRenderer(ball) {
+                Sprite = new Sprite(ResourceManager.LoadTexture2D("awesomeface.png", "ball")),
+                SortIndex = 99
+            };
+            var ballFeature = new BallFeature(ball);
+            ballFeature.Speed = BALL_SPEED;
+            ballFeature.Paddle = paddle;
+            ball.AddFeature(ballFeature);
+            ball.Transform.Offset = new Vector2(256, 256);
+            ball.Transform.Position = new Vector2(480, paddle.Transform.Position.Y - (PADDLE_HEIGHT + BALL_RADIUS));
+            ball.Transform.Scale = new Vector2(0.05f, 0.05f);
+            AddObject(ball);
+            #endregion
         }
+        #endregion
 
         public override void OnUpdate(double elapsed) {
             if (Input.GetKeyPressing(KeyCode.Left)) {
-                paddle.Transform.Position.X -= (float)(960 * elapsed);
+                paddle.Transform.Position.X -= (float)(PADDLE_SPEED * elapsed);
 
                 if (paddle.Transform.Position.X < 48) {
                     paddle.Transform.Position.X = 48;
@@ -164,7 +199,7 @@ namespace BreakoutSharp {
             }
 
             if (Input.GetKeyPressing(KeyCode.Right)) {
-                paddle.Transform.Position.X += (float)(960 * elapsed);
+                paddle.Transform.Position.X += (float)(PADDLE_SPEED * elapsed);
 
                 if (paddle.Transform.Position.X > 912) {
                     paddle.Transform.Position.X = 912;

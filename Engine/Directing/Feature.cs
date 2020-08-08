@@ -4,7 +4,7 @@ using System;
 
 namespace BreakoutSharp.Engine.Directing {
     abstract class Feature {
-        GameObject GameObject { get; }
+        public GameObject GameObject { get; }
 
         public Feature(GameObject owner) {
             GameObject = owner;
